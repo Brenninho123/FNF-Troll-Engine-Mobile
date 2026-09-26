@@ -449,6 +449,23 @@ class PlayState extends MusicBeatState
 	private var keysArray:Array<Array<FlxKey>>;
 	private var buttonsArray:Array<Array<FlxGamepadInputID>>;
 
+	#if mobile
+	private var laneInput:funkin.mobile.input.LaneInput;
+
+	private function onLanePress(column:Int):Void
+	{
+		if (paused || !startedCountdown || inCutscene || endingSong)
+			return;
+
+		strumKeyDown(column);
+	}
+
+	private function onLaneRelease(column:Int):Void
+	{
+		strumKeyUp(column);
+	}
+	#end
+
 	////
 	public var songHits:Int = 0;
 	public var songMisses:Int = 0;
@@ -996,6 +1013,10 @@ class PlayState extends MusicBeatState
 
 		if (!ClientPrefs.controllerMode)
 			addKeyboardEvents();
+
+		#if mobile
+		laneInput = new funkin.mobile.input.LaneInput(keyCount, onLanePress, onLaneRelease);
+		#end
 
 		////
 		#if ALLOW_DEPRECATION
@@ -2434,6 +2455,10 @@ class PlayState extends MusicBeatState
 		if (controls.PAUSE && canPause)
 			doPauseShit();
 
+		#if mobile
+		laneInput.update();
+		#end
+
 		if (generatedMusic && !isDead) {
 			if (ClientPrefs.controllerMode) {
 				keyShit();
@@ -3786,6 +3811,10 @@ class PlayState extends MusicBeatState
 	public function pause(){
 		paused = true;
 
+		#if mobile
+		laneInput?.releaseAll();
+		#end
+
 		Conductor.pauseSong();
 
 		if (finishTimer != null && !finishTimer.finished)
@@ -3876,6 +3905,11 @@ class PlayState extends MusicBeatState
 
 		////
 		removeKeyboardEvents();
+
+		#if mobile
+		laneInput?.releaseAll();
+		laneInput = null;
+		#end
 
 		FlxG.timeScale = 1.0;
 		ClientPrefs.gameplaySettings.set('botplay', cpuControlled);

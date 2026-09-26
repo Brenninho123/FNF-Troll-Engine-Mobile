@@ -195,6 +195,10 @@ class TitleState extends MusicBeatState
 		{
 			if(controls.UI_LEFT) swagShader.hue -= elapsed * 0.1;
 			if(controls.UI_RIGHT) swagShader.hue += elapsed * 0.1;
+
+			#if mobile
+			swagShader.hue += funkin.mobile.input.TouchUtil.dragX * 0.002;
+			#end
 		}
 
 		titleTimer = (titleTimer + elapsed) % 2;
@@ -210,7 +214,12 @@ class TitleState extends MusicBeatState
 			}
 		}
 		else if (getPressedEnter()) {
-			if (FlxG.keys.pressed.SHIFT && cheatProgress == cheatCode.length) {
+			var openSongSelect:Bool = FlxG.keys.pressed.SHIFT;
+			#if mobile
+			openSongSelect = openSongSelect || funkin.mobile.input.TouchUtil.longPressedTouch() != null;
+			#end
+
+			if (openSongSelect && cheatProgress == cheatCode.length) {
 				var ss = new funkin.states.SongSelectState();
 				ss.bgColor = FlxColor.fromRGB(0,0,0,240);
 				ss.goBack = () -> {};
@@ -377,6 +386,19 @@ class TitleState extends MusicBeatState
 
 	private function handleCheatCode() {
 		var keyPressed:FlxKey = FlxG.keys.firstJustPressed();
+
+		#if mobile
+		if (keyPressed == -1) {
+			keyPressed = switch (funkin.mobile.input.TouchUtil.swipedDirection()) {
+				case funkin.mobile.input.SwipeDirection.UP: FlxKey.UP;
+				case funkin.mobile.input.SwipeDirection.DOWN: FlxKey.DOWN;
+				case funkin.mobile.input.SwipeDirection.LEFT: FlxKey.LEFT;
+				case funkin.mobile.input.SwipeDirection.RIGHT: FlxKey.RIGHT;
+				case funkin.mobile.input.SwipeDirection.NONE: -1;
+			}
+		}
+		#end
+
 		if (keyPressed != -1 && cheatProgress < cheatCode.length) {
 			if (keyPressed == cheatCode[cheatProgress]) {
 				cheatProgress++;
@@ -399,18 +421,14 @@ class TitleState extends MusicBeatState
 			return true;
 		#end
 
-		#if FLX_MOUSE
+		#if (FLX_MOUSE && !mobile)
 		if (FlxG.mouse.justPressed)
 			return true;
 		#end
 
 		#if mobile
-		for (touch in FlxG.touches.list){
-			if (touch.justPressed) {
-				return true;
-				break;
-			}
-		}
+		if (funkin.mobile.input.TouchUtil.tappedTouch() != null || funkin.mobile.input.TouchUtil.longPressedTouch() != null)
+			return true;
 		#end
 
 		#if FLX_GAMEPAD

@@ -212,7 +212,13 @@ class Controls {
 		return false;
 	}
 
+	#if mobile
+	public function checkTouch(id:String, state:FlxInputState):Bool {
+		return this.id == 0 && funkin.mobile.input.TouchControls.check(id, state);
+	}
+	#end
+
 	public inline function get(id:String, state:FlxInputState):Bool {
-		return checkKey(id, state) || checkButton(id, state);
+		return checkKey(id, state) || checkButton(id, state) #if mobile || checkTouch(id, state) #end;
 	}
 }

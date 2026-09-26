@@ -100,6 +100,10 @@ class Main extends Sprite
 		super();
 		instance = this;
 
+		#if mobile
+		funkin.mobile.backend.StorageUtil.init();
+		#end
+
 		#if CRASH_HANDLER
 		CrashHandler.init();
 		#end

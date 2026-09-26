@@ -93,6 +93,11 @@
 			"url": "https://gitlab.com/haxe-grig/grig.audio.git"
 		},
 		{
+			"name": "extension-androidtools",
+			"type": "haxelib",
+			"version": "2.2.2"
+		},
+		{
 			"name": "linc_filedialogs",
 			"type": "git",
 			"dir": null,

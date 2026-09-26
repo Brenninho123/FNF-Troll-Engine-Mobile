@@ -258,7 +258,21 @@ class CreditsState extends MusicBeatState
 			goBack();
 		}
 
-		if (controls.ACCEPT){
+		var accepted:Bool = controls.ACCEPT;
+
+		#if mobile
+		funkin.mobile.input.TouchControls.claimTaps();
+
+		var tapped = funkin.mobile.input.TouchUtil.tappedItem(titleArray, null, true);
+		if (tapped != null) {
+			if (tapped.ID == curSelected)
+				accepted = true;
+			else if (dataArray[tapped.ID].selectable)
+				changeSelection(tapped.ID, true);
+		}
+		#end
+
+		if (accepted){
 			var link:Null<String> = dataArray[curSelected].link;
 			if (link != null && link.length > 0)
 				CoolUtil.browserLoad(link);

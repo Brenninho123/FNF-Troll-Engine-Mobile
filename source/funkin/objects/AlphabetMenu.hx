@@ -147,6 +147,18 @@ class AlphabetMenu extends FlxTypedGroup<Alphabet>
 		var down = justDown || controls.UI_DOWN;
 		var accept = controls.ACCEPT;
 
+		#if mobile
+		funkin.mobile.input.TouchControls.claimTaps();
+
+		var tapped = funkin.mobile.input.TouchUtil.tappedItem(members, null, true);
+		if (tapped != null) {
+			if (tapped == curItem)
+				accept = true;
+			else
+				curSelected = members.indexOf(tapped);
+		}
+		#end
+
 		if (FlxG.mouse.wheel != 0)
 			curSelected -= FlxG.mouse.wheel;
 

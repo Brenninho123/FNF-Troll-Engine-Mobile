@@ -1,125 +1,90 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Build
 
-# Controls when the action will run. 
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    # branches: [ main ]
   pull_request:
     branches: [ main ]
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  buildWindows:
-    runs-on: windows-latest
-    
+  buildAndroid:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v6.0.3
 
       - uses: krdlab/setup-haxe@v2.1.0
         with:
           haxe-version: 4.3.7
-      # Runs a set of commands using the runners shell
-      - name: Install Haxelib
-        run: |
-          haxelib install hxcpp > nul --quiet
-          haxelib install hmm --quiet
-          haxelib run hmm setup
-          haxelib run hmm install
-        shell: cmd
-      - name: Create Version Tag
-        run: echo "${{github.run_id}}" > VERSION
-      - name: Compile
-        run: haxelib run lime build windows -Dartifact
-      - name: Publish Artifact
-        uses: actions/upload-artifact@v7.0.1
-        with:
-          name: windowsBuild
-          path: export/release/windows/bin
-  
-  buildLinux:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-${{ matrix.version }}
-    strategy:
-      fail-fast: false
-      matrix:
-        build: [release]
-        version: [24.04]
-    timeout-minutes: 45
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v6.0.3
-
-      - uses: krdlab/setup-haxe@v2.1.0
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
-          haxe-version: 4.3.7
-      # Runs a set of commands using the runners shell
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential gcc-13 g++-13 vlc libvlc-dev libvlccore-dev vlc-bin \
-            libwayland-dev libwayland-bin wayland-protocols libasound2-dev \
-            libpulse-dev libjack-jackd2-dev libpipewire-0.3-dev libgl1-mesa-dev \
-            libegl1-mesa-dev libglu1-mesa-dev libdbus-1-dev libudev-dev \
-            libxkbcommon-dev libx11-dev libxext-dev libx11-xcb-dev libxfixes-dev \
-            libxss-dev libxrender-dev libxrandr-dev libxcursor-dev libxi-dev \
-            libxinerama-dev libxxf86vm-dev libgbm-dev libdrm-dev libdecor-0-dev \
-            libvulkan-dev pkg-config
+          distribution: zulu
+          java-version: 17
+
+      - name: Setup Android NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r27c
+
       - name: Install Haxelib
         run: |
           haxelib setup ~/haxelib
           haxelib install hxcpp > /dev/null --quiet
           haxelib install hmm --quiet
           haxelib run hmm install
-      - name: Create Version Tag
-        run: echo "${{github.run_id}}" > VERSION
+
+      - name: Configure Lime
+        run: |
+          haxelib run lime setup -alias -y
+          haxelib run lime config ANDROID_SDK $ANDROID_HOME
+          haxelib run lime config ANDROID_NDK_ROOT ${{ steps.setup-ndk.outputs.ndk-path }}
+          haxelib run lime config JAVA_HOME $JAVA_HOME
+          haxelib run lime config ANDROID_SETUP true
+
       - name: Compile
-        run: haxelib run lime build Project.xml linux -Dartifact --app-version="4.0.0-${{ github.run_id}}"
+        run: haxelib run lime build Project.xml android -Dartifact
+
       - name: Publish Artifact
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: linuxBuild
-          path: export/release/linux/bin
-  
-  buildMac:
-    runs-on: macos-${{ matrix.version }}
-    strategy:
-      fail-fast: false
-      matrix:
-        build: [release]
-        version: [15]
-    timeout-minutes: 45
-    
+          name: androidBuild
+          path: export/release/android/bin/app/build/outputs/apk/debug/*.apk
+
+  buildIOS:
+    runs-on: macos-15
+    timeout-minutes: 60
+
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v6.0.3
 
       - uses: krdlab/setup-haxe@v2.1.0
         with:
           haxe-version: 4.3.7
-      # Runs a set of commands using the runners shell
+
       - name: Install Haxelib
         run: |
           haxelib setup ~/haxelib
           haxelib install hxcpp > /dev/null --quiet
           haxelib install hmm --quiet
           haxelib run hmm install
-      - name: Create Version Tag
-        run: echo "${{github.run_id}}" > VERSION
+
       - name: Compile
-        run: haxelib run lime build mac -Dartifact --app-version="4.0.0-${{ github.run_id}}"
+        run: haxelib run lime build Project.xml ios -nosign -Dartifact
+
+      - name: Package IPA
+        run: |
+          APP_PATH=$(find export/release/ios/build -name "*.app" -maxdepth 3 | head -n 1)
+          mkdir -p ipa/Payload
+          cp -R "$APP_PATH" ipa/Payload/
+          cd ipa
+          zip -qr ../TrollEngine.ipa Payload
+
       - name: Publish Artifact
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: macBuild
-          path: 'export/release/macos/bin'
+          name: iosBuild
+          path: TrollEngine.ipa

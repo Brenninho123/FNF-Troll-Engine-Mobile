@@ -273,6 +273,18 @@ class MainMenuState extends MusicBeatState
 			}
 			#end
 
+			#if mobile
+			funkin.mobile.input.TouchControls.claimTaps();
+
+			var tapped = funkin.mobile.input.TouchUtil.tappedItem(menuItems.members);
+			if (tapped != null)
+			{
+				if (tapped.ID != curSelected)
+					changeSelection(tapped.ID, true);
+				onSelected();
+			}
+			#end
+
 			if (controls.BACK)
 			{
 				selectedSomethin = true;

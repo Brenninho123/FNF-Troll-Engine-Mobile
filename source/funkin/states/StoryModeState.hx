@@ -382,7 +382,21 @@ class StoryModeState extends MusicBeatState {
 		if (controls.UI_LEFT_P)
 			changeDifficulty(-1);
 
-		if(controls.ACCEPT){
+		var accepted:Bool = controls.ACCEPT;
+
+		#if mobile
+		funkin.mobile.input.TouchControls.claimTaps();
+
+		var tapped = funkin.mobile.input.TouchUtil.tappedItem(levelTitles.members.filter(title -> title.alpha > 0.2));
+		if (tapped != null) {
+			if (tapped.ID == selectedLevel)
+				accepted = true;
+			else
+				changeLevel(tapped.ID, true);
+		}
+		#end
+
+		if(accepted){
 			acceptLevel();
 		}
 

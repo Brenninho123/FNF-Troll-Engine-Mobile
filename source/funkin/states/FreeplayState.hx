@@ -97,12 +97,20 @@ class FreeplayState extends MusicBeatSubstate
 
 		////
 		var hintStr = "";
+		#if mobile
+		hintStr += '[SWIPE UP FROM BOTTOM] ${Paths.getString('action_resetScore') ?? 'action_resetScore'}';
+		hintStr += '\n';
+		hintStr += '[SWIPE LEFT FROM RIGHT] ${Paths.getString('action_openGameplayChangers') ?? 'action_openGameplayChangers'}';
+		hintStr += '\n';
+		hintStr += '[HOLD] ${Paths.getString('action_listenToSong') ?? 'action_listenToSong'}';
+		#else
 		hintStr += '[R] ${Paths.getString('action_resetScore') ?? 'action_resetScore'}';
 		//InputFormatter.getKeyName(controls.getFirstBind('reset'));
 		hintStr += '\n';
 		hintStr += '[CTRL] ${Paths.getString('action_openGameplayChangers') ?? 'action_openGameplayChangers'}';
 		hintStr += '\n';
 		hintStr += '[SPACE] ${Paths.getString('action_listenToSong') ?? 'action_listenToSong'}';
+		#end
 
 		hintText = new FlxText(16, 16, 0, hintStr);
 		hintText.setFormat(Paths.font("vcr.ttf"), 16, 0xFFFFFFFF, LEFT);
@@ -300,7 +308,22 @@ class FreeplayState extends MusicBeatSubstate
 			changeDifficulty(1);
 		}
 
-		if (FlxG.keys.justPressed.SPACE){
+		var listen:Bool = FlxG.keys.justPressed.SPACE;
+		var resetScore:Bool = FlxG.keys.justPressed.R;
+		var gameplayChangers:Bool = FlxG.keys.justPressed.CONTROL;
+
+		#if mobile
+		var held = funkin.mobile.input.TouchUtil.longPressedItem(menu.members, null, true);
+		if (held != null) {
+			menu.curSelected = menu.members.indexOf(held);
+			listen = true;
+		}
+
+		resetScore = resetScore || funkin.mobile.input.TouchControls.justPressed(funkin.mobile.input.TouchControls.EDGE_BOTTOM);
+		gameplayChangers = gameplayChangers || funkin.mobile.input.TouchControls.justPressed(funkin.mobile.input.TouchControls.EDGE_RIGHT);
+		#end
+
+		if (listen){
 			stun();
 			playSelectedSongMusic();
 
@@ -308,11 +331,11 @@ class FreeplayState extends MusicBeatSubstate
 			menu.controls = null;
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 			close();
-			
-		}else if (FlxG.keys.justPressed.R){
+
+		}else if (resetScore){
 			openResetScorePrompt();
-			
-		}else if (FlxG.keys.justPressed.CONTROL){
+
+		}else if (gameplayChangers){
 			openGameplayChangersMenu();
 		}
 	}

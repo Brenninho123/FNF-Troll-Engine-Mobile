@@ -66,6 +66,9 @@ class InitState extends TransitionableState
 		shitToDo = [
 			Run("Initializing assets", Paths.init),
 			Run("Initializing controls", Controls.init),
+			#if mobile
+			Run("Initializing touch input", funkin.mobile.input.TouchGestures.init),
+			#end
 			Run("Initializing preferences", ClientPrefs.initialize),
 			Run("Loading preferences", function() {
 				ClientPrefs.load();

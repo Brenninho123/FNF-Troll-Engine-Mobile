@@ -340,6 +340,9 @@ class Paths
 		return false;
 	}
 	inline static public function getDirectoryFileList(path:String):Array<String> {
+		#if (FILESYSTEM_ALLOWED && READ_EMBEDDED_ASSETS && mobile)
+		return readDirectory(path);
+		#end
 		#if FILESYSTEM_ALLOWED
 		if (FileSystem.isDirectory(path))
 			return FileSystem.readDirectory(path);
@@ -540,19 +543,37 @@ class Paths
 	public static inline function readDirectory(path:String):Array<String> {
 		var ret:Array<String>;
 
+		#if (FILESYSTEM_ALLOWED && READ_EMBEDDED_ASSETS && mobile)
+		ret = Paths._readDirectory(path);
+		var embedded:Null<Array<String>> = AltFilePaths._readDirectory(path);
+		return mergeFileLists(ret, embedded);
+		#else
 		#if FILESYSTEM_ALLOWED
 		ret = Paths._readDirectory(path);
-		if (ret != null) return ret; 
+		if (ret != null) return ret;
 		#end
-		
+
 		#if READ_EMBEDDED_ASSETS
 		ret = AltFilePaths._readDirectory(path);
-		if (ret != null) return ret; 
+		if (ret != null) return ret;
 		#end
-		
+
 		ret = [];
 		return ret;
+		#end
 	}
+
+	#if (FILESYSTEM_ALLOWED && READ_EMBEDDED_ASSETS && mobile)
+	static function mergeFileLists(primary:Null<Array<String>>, secondary:Null<Array<String>>):Array<String> {
+		var ret:Array<String> = primary ?? [];
+		if (secondary != null) {
+			for (name in secondary)
+				if (!ret.contains(name))
+					ret.push(name);
+		}
+		return ret;
+	}
+	#end
 
 	inline static public function fileExists(key:String, ?type:AssetType, ?library:String):Bool
 	{
@@ -867,10 +888,8 @@ private class AltFilePaths {
 	}
 
 	public static inline function _readDirectory(path:String):Null<Array<String>> {
-		if (dirMap.exists(dir))
-			dirMap.get(dir);
-		else	
-			null;
+		var dir:String = withoutEndingSlash(path);
+		return dirMap.exists(dir) ? [for (i in dirMap.get(dir)) i] : null;
 	}
 	#end
 }

@@ -1646,6 +1646,11 @@ class OptionsSubstate extends MusicBeatSubstate
 				if (FlxG.keys.pressed.PAGEDOWN)
 					movement += keySpeed;
 
+				#if mobile
+				if (scrubbingBar == null)
+					movement -= funkin.mobile.input.TouchUtil.dragY;
+				#end
+
 				camFollow.y += movement;
 				camFollowPos.y += movement;
 			}
