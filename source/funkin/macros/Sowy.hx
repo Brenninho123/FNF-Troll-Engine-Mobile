@@ -33,6 +33,21 @@ class Sowy
 		return macro $v{sys.io.File.getContent(path)};
 	}
 
+	#if macro
+	/**
+		Build macro that includes `funkin/api/build.xml` in the hxcpp build using an absolute path,
+		since a relative path breaks when the build directory is nested differently (e.g. iOS)
+	**/
+	public static function addApiBuildXml():Null<Array<Field>> {
+		var path:String = haxe.macro.Context.resolvePath("funkin/api/build.xml");
+		path = StringTools.replace(sys.FileSystem.fullPath(path), "\\", "/");
+
+		var cls = haxe.macro.Context.getLocalClass().get();
+		cls.meta.add(":buildXml", [macro $v{'<include name="$path" />'}], cls.pos);
+		return null;
+	}
+	#end
+
 	public static function findByName(fields:Array<Field>, name:String):Null<Field>{
 		for (field in fields){
 			if (field.name == name)

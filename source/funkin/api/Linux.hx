@@ -2,7 +2,7 @@ package funkin.api;
 
 #if (linux && cpp)
 import cpp.Int16;
-@:buildXml('<include name="../../../../source/funkin/api/build.xml" />')
+@:build(funkin.macros.Sowy.addApiBuildXml())
 @:include("refreshrate.hpp")
 extern class Linux {
     @:native("getMonitorRefreshRate")

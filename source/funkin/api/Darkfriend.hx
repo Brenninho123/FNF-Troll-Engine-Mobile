@@ -3,7 +3,7 @@ package funkin.api;
 /**
  * https://stackoverflow.com/questions/51334674/how-to-detect-windows-10-light-dark-mode-in-win32-application
  */
-@:buildXml('<include name="../../../../source/funkin/api/build.xml" />')
+@:build(funkin.macros.Sowy.addApiBuildXml())
 @:include("darkmode.hpp")
 extern class Darkfriend {
 	/**
