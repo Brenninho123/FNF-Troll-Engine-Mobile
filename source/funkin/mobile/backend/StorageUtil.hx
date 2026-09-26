@@ -9,7 +9,8 @@ import sys.io.File;
 import extension.androidtools.Permissions;
 import extension.androidtools.Settings;
 import extension.androidtools.content.Context;
-import extension.androidtools.os.Build;
+import extension.androidtools.os.Build.VERSION;
+import extension.androidtools.os.Build.VERSION_CODES;
 import extension.androidtools.os.Environment;
 #end
 
@@ -127,7 +128,7 @@ class StorageUtil
 			return;
 		}
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+		if (VERSION.SDK_INT >= VERSION_CODES.R)
 			Settings.requestSetting('MANAGE_APP_ALL_FILES_ACCESS_PERMISSION');
 		else
 			Permissions.requestPermissions(['READ_EXTERNAL_STORAGE', 'WRITE_EXTERNAL_STORAGE']);

@@ -14,6 +14,26 @@ class TouchUtil
 	public static var dragX(get, never):Float;
 	public static var dragY(get, never):Float;
 
+	public static inline function gameX(touch:FlxTouch):Int
+	{
+		#if (flixel >= "5.9.0")
+		return touch.gameX;
+		#else
+		@:privateAccess
+		return touch._globalScreenX;
+		#end
+	}
+
+	public static inline function gameY(touch:FlxTouch):Int
+	{
+		#if (flixel >= "5.9.0")
+		return touch.gameY;
+		#else
+		@:privateAccess
+		return touch._globalScreenY;
+		#end
+	}
+
 	public static function anyJustPressed():Bool
 	{
 		for (touch in FlxG.touches.list)

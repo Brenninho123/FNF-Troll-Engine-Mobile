@@ -97,7 +97,7 @@ class TouchGestures extends FlxBasic
 				point = begin(touch);
 			}
 
-			point.move(touch.gameX, touch.gameY, frame);
+			point.move(TouchUtil.gameX(touch), TouchUtil.gameY(touch), frame);
 
 			if (touch.justReleased)
 				finish(point, false);
@@ -125,7 +125,7 @@ class TouchGestures extends FlxBasic
 
 	function begin(touch:FlxTouch):TouchPoint
 	{
-		final point:TouchPoint = new TouchPoint(touch.touchPointID, touch.gameX, touch.gameY, getEdge(touch.gameX, touch.gameY), frame);
+		final point:TouchPoint = new TouchPoint(touch.touchPointID, TouchUtil.gameX(touch), TouchUtil.gameY(touch), getEdge(TouchUtil.gameX(touch), TouchUtil.gameY(touch)), frame);
 		points.set(point.id, point);
 		onTouchStart.dispatch(point);
 		return point;

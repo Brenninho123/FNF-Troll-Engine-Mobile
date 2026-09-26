@@ -48,7 +48,7 @@ class LaneInput
 			}
 			else if (slide)
 			{
-				final lane:Int = laneAt(touch.gameX);
+				final lane:Int = laneAt(TouchUtil.gameX(touch));
 
 				if (lane != touchLanes[i])
 				{
@@ -67,7 +67,7 @@ class LaneInput
 			if (TouchGestures.instance?.getPoint(touch.touchPointID)?.startEdge == TouchEdge.TOP)
 				continue;
 
-			press(touch.touchPointID, laneAt(touch.gameX));
+			press(touch.touchPointID, laneAt(TouchUtil.gameX(touch)));
 		}
 	}
 
